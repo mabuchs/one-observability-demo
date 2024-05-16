@@ -720,6 +720,7 @@ Resources:
             - !Sub SIZE=${C9InstanceVolumeSize}
             - !Sub REGION=${AWS::Region}
             - |
+              unset AWS_SHARED_CREDENTIALS_FILE
               TOKEN=$(curl -s -X PUT "http://169.254.169.254/latest/api/token" -H "X-aws-ec2-metadata-token-ttl-seconds: 60")
               INSTANCEID=$(curl -s -H "X-aws-ec2-metadata-token: $TOKEN" -v http://169.254.169.254/latest/meta-data/instance-id 2> /dev/null)
               VOLUMEID=$(aws ec2 describe-instances \
@@ -827,6 +828,7 @@ Resources:
         - Key: tag:SSMBootstrap
           Values:
           - !Ref EnvironmentName
+    DependsOn: C9BootstrapInstanceLambda
 
   C9PatchAssociation:
     Type: AWS::SSM::Association
@@ -881,7 +883,6 @@ Resources:
       - Ref: C9Role
 
   C9Instance:
-    DependsOn: C9BootstrapAssociation
     Type: AWS::Cloud9::EnvironmentEC2
     Properties:
       Description: !Sub  AWS Cloud9 instance for ${EnvironmentName}
